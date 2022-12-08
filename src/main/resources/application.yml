@@ -1,0 +1,388 @@
+# Application properties that need to be
+# embedded within the web application can be included here
+
+logging:
+  level:
+    root: info
+    org:
+      apereo:
+        cas: info
+      ldaptive: info
+
+
+#redis:
+#  host: 10.10.234.32
+#  port: 7410
+#  password: 2651080c6814a4a9d62da69a12f962b6
+
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password:
+
+
+cas:
+  webflow:
+    session:
+      storage: true
+    crypto:
+      encryption:
+        key: KS8ZvXy7gqNEpi6pEoe5ig
+      signing:
+        key: kAz5xGY2OBzzP-zcYdxyaF8i_97tC_LyC4CEwMgipMdBcg4xpnYt_JOZ0MwGU__GH8p9cByqy6tYmVv0RT4JlA
+  tgc:
+    crypto:
+      encryption:
+        key: l4NFTj3Bu9sWBr_7wn0e-_UXG6r09U_-bGJ-jW4ty-I
+      signing:
+        key: _dMyxp0OzddD3XZK7uCWwjxq1X-1GE_Xt67tvSGzsvX-ASkgv0ldd5vHbKhy-RJrmUK-qFmU3WW2QA3XMqQNug
+
+  authn:
+    pm:
+      enabled: true
+      captchaEnabled: true
+      autoLogin: true
+      policyPattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,10}
+      reset:
+        mail:
+          attribute-name: mail
+          from:
+          subject: 重置密码
+          text:
+          validateAddresses: false
+
+    ldap:
+      - base-dn: ou=employee,dc=company,dc=com
+        bind-credential: 123
+        principal-attribute-password: userPassword
+        fail-fast: true
+        bind-dn: cn=Manager,dc=wonhigh,dc=com
+        ldap-url: ldap://127.0.0.1:389
+        password-encoder:
+          encoding-algorithm: MD5
+          type: NONE
+        search-filter: (&(|(uid={user})(mobile={user}))(objectclass=SsoUser)(|(state=0)(state=1)(state=2)))
+        type: DIRECT
+        use-start-tls: false
+        dn-format: uid=%s,ou=employee,dc=company,dc=com
+
+    throttle:
+      bucket4j:
+        bandwidth:
+          - capacity: 120
+            duration: PT60S
+            initial-tokens: 50
+            refill-count: 10
+      core:
+        app-code: CAS
+        username-parameter: ''
+      failure:
+        code: AUTHENTICATION_FAILED
+        range-seconds: -1
+        threshold: -1
+        throttle-window-seconds: 0
+      schedule:
+        enabled: true
+        enabled-on-host: .*
+        repeat-interval: PT2M
+        start-delay: PT15S
+  audit:
+    redis:
+      enabled: true
+      host: ${redis.host}
+      port: ${redis.port}
+      password: ${redis.password}
+      database: 0
+      pool:
+        enabled: true
+        #返回池是否公平地为等待借用对象的线程提供服务。True 表示等待线程的服务就像在 FIFO 队列中等待一样。
+        fairness: false
+        #返回池是否具有关于空闲对象的 LIFO（后进先出）行为 - 总是从池中返回最近使用的对象，或者作为 FIFO（先进先出）队列，池总是返回空闲对象池中最旧的对象。
+        lifo: true
+        #池在给定时间可以分配的最大连接数。使用负值表示没有限制。
+        max-active: 8
+        #池中“空闲”连接的最大数量。使用负值表示空闲连接数不受限制
+        max-idle: 8
+        #池中要维护的最小空闲连接数的目标。此设置仅在为正时才有效。
+        min-idle: 1
+        #当池耗尽时，连接分配在抛出异常之前应该阻塞的最长时间（以毫秒为单位）。使用负值无限期阻塞
+
+  ticket:
+    registry:
+      redis:
+        host: ${redis.host}
+        port: ${redis.port}
+        password: ${redis.password}
+        enabled: true
+        database: 0
+        connect-timeout: PT10S
+        pool:
+          enabled: true
+          #返回池是否公平地为等待借用对象的线程提供服务。True 表示等待线程的服务就像在 FIFO 队列中等待一样。
+          fairness: false
+          #返回池是否具有关于空闲对象的 LIFO（后进先出）行为 - 总是从池中返回最近使用的对象，或者作为 FIFO（先进先出）队列，池总是返回空闲对象池中最旧的对象。
+          lifo: true
+          #池在给定时间可以分配的最大连接数。使用负值表示没有限制。
+          max-active: 8
+          #池中“空闲”连接的最大数量。使用负值表示空闲连接数不受限制
+          max-idle: 8
+          #池中要维护的最小空闲连接数的目标。此设置仅在为正时才有效。
+          min-idle: 1
+          #当池耗尽时，连接分配在抛出异常之前应该阻塞的最长时间（以毫秒为单位）。使用负值无限期阻塞
+          max-wait: 10000
+        crypto:
+          #是否启用加密操作
+          enabled: false
+          alg: AES
+          #签名密钥是一个 JWT，其长度由签名密钥大小设置定义
+          signing:
+            key:
+          encryption:
+            #加密密钥。默认情况下，除非另有说明，否则加密密钥必须是随机生成的字符串，其长度由加密密钥大小设置定义
+            key:
+    tgt:
+      core:
+        max-length: 50
+        #用于控制是否跟踪最近的 SSO 会话的标志。由于可能会为同一个应用程序发出多张票证，这会影响跟踪每张票证的会话信息的方式，进而对注销产生后续影响。
+        only-track-most-recent-session: true
+      primary:
+        max-time-to-live-in-seconds: 28800
+        time-to-kill-in-seconds: 7200
+      timeout:
+        max-time-to-live-in-seconds: 0
+      hard-timeout:
+        time-to-kill-in-seconds: 0
+      throttled-timeout:
+        #每次尝试之间的超时
+        time-in-between-uses-in-seconds: 0
+        #以秒为单位的超时以终止会话并认为票证已过期
+        time-to-kill-in-seconds: 0
+    st:
+      max-length: 20
+      number-of-uses: 1
+      time-to-kill-in-seconds: 10
+    pt:
+      number-of-uses: 1
+      time-to-kill-in-seconds: 10
+    pgt:
+      max-length: 50
+    tst:
+      time-to-kill-in-seconds: 5
+
+
+  logout:
+    #注销前，允许在 Web 界面上确认选项
+    confirm-logout: false
+    #注销后是否应允许 CAS 重定向到其他位置。
+    follow-service-redirects: false
+    #注销后 CAS 应重定向到的目标目的地由您在此处选择的参数名称指示和提取。如果未指定，默认值将用作service
+    redirect-parameter: service
+    #在所有注销操作完成后，CAS 必须立即重定向到的 url。通常在 CAS 充当代理并且需要重定向到外部身份提供者的注销端点以删除会话等的场景中很有用
+    redirect-url:
+    #指示是否也应在注销时删除已发行并链接到票证授予票证的票证。CAS 签发了许多票证，其过期策略通常默认绑定到 SSO 过期策略和活动 TGT，
+    #但此类票证可能被允许在 CAS SSO 会话的正常生命周期之外继续存在，并提供更新选项。示例包括 OAuth 的访问令牌等。如果您希望删除所有链接的票证，请将此选项设置为 true。
+    remove-descendant-tickets: false
+  slo:
+    #SLO 回调是否应该通过 HTTP 客户端以异步方式完成。为真时，CAS 不会等待操作完全完成，而是会恢复控制继续进行
+    asynchronous: true
+    #是否应为 CAS 部署在全局范围内完全禁用 SLO
+    disabled: false
+
+#    accept:
+#      enabled: true
+#      name: Static Credentials
+#      users: casuser::Mellon
+management:
+  endpoint:
+    health:
+      status:
+        order: WARN,DOWN,OUT_OF_SERVICE,UNKNOWN,UP
+    restart:
+      enabled: false
+    shutdown:
+      enabled: false
+  endpoints:
+    enabled-by-default: false
+    jmx:
+      exposure:
+        exclude: '*'
+    web:
+      base-path: /actuator
+      exposure:
+        include: info,health,status,configurationMetadata
+  health:
+    defaults:
+      enabled: false
+    memoryHealthIndicator:
+      enabled: true
+    ping:
+      enabled: true
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+  metrics:
+    enable:
+      logback: true
+      process:
+        cpu: true
+        files: true
+        start:
+          time: true
+        uptime: true
+      system:
+        cpu: true
+    export:
+      atlas:
+        enabled: false
+      datadog:
+        enabled: false
+      ganglia:
+        enabled: false
+      graphite:
+        enabled: false
+      influx:
+        enabled: false
+      jmx:
+        enabled: false
+      newrelic:
+        enabled: false
+      prometheus:
+        enabled: false
+      signalfx:
+        enabled: false
+      simple:
+        enabled: true
+      statsd:
+        enabled: false
+      wavefront:
+        enabled: false
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+  server:
+    add-application-context-header: false
+server:
+  compression:
+    enabled: true
+    mime-types: application/javascript,application/json,application/xml,text/html,text/xml,text/plain
+  error:
+    include-stacktrace: ALWAYS
+  forward-headers-strategy: NATIVE
+  max-http-header-size: 2097152
+  port: 8080
+  servlet:
+    context-parameters:
+      isLog4jAutoInitializationDisabled: true
+    context-path: /cas
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    session:
+      cookie:
+        http-only: true
+      timeout: PT120S
+      tracking-modes: COOKIE
+  shutdown: graceful
+  ssl:
+    enabled: false
+  #    key-password: changeit
+  #    key-store: file:/etc/cas/thekeystore
+  #    key-store-password: changeit
+  tomcat:
+    accesslog:
+      enabled: true
+      pattern: '%t %a "%r" %s (%D ms)'
+      suffix: .log
+    additional-tld-skip-patterns: '*.jar'
+    background-processor-delay: 0s
+    basedir: build/tomcat
+    connection-timeout: PT20S
+    max-http-form-post-size: 2097152
+    remoteip:
+      port-header: X-Forwarded-Port
+      protocol-header: X-Forwarded-Proto
+      protocol-header-https-value: https
+      remote-ip-header: X-FORWARDED-FOR
+    threads:
+      max: 200
+      min-spare: 10
+    uri-encoding: UTF-8
+spring:
+  session:
+    redis:
+      namespace: cas-overlay:session
+      #会话保存模式。确定如何跟踪会话更改并将其保存到会话存储中。
+      save-mode: on-set-attribute
+      #会话刷新模式。确定何时将会话更改写入会话存储。
+      flush-mode: on-save
+      #过期会话清理作业的 Cron 表达式
+      cleanup-cron: 0 * * * * *
+  redis:
+    host: ${redis.host}
+    port: ${redis.port}
+    password: ${redis.password}
+    ssl: false
+    database: 0
+    timeout: 10000
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+        max-wait: 10000
+      shutdown-timeout: 100ms
+    client-name: cas
+    client-type: lettuce
+    connect-timeout: PT10S
+
+  aop:
+    auto: true
+    proxy-target-class: false
+  cloud:
+    bus:
+      enabled: false
+    config:
+      allow-override: true
+      override-none: false
+      override-system-properties: false
+    discovery:
+      client:
+        composite-indicator:
+          enabled: false
+  groovy:
+    template:
+      enabled: false
+  jmx:
+    enabled: false
+  jpa:
+    open-in-view: false
+  lifecycle:
+    timeout-per-shutdown-phase: 15s
+  main:
+    allow-bean-definition-overriding: true
+    lazy-initialization: false
+  mvc:
+    pathmatch:
+      matching-strategy: ant-path-matcher
+  security:
+    user:
+      name: casuser
+  thymeleaf:
+    cache: true
+    encoding: UTF-8
+    mode: HTML
+    template-resolver-order: 100
+springdoc:
+  model-and-view-allowed: true
+  show-actuator: true
+  swagger-ui:
+    display-request-duration: true
+  writer-with-default-pretty-printer: true
